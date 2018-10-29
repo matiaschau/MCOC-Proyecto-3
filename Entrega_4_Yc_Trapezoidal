@@ -18,16 +18,20 @@ g = 9.81 #Gravedad
 
 tol = 10.
 
-while tol > 1./10**6.:
-	Tc = 8+2.*yc*ss
-	A = b*yc+ss*yc**2 #Area
-	Pm = b + 2.*yc*sp.sqrt(ss**2 +1) #Perimetro mojado
-	Pmp = 2.*sp.sqrt(ss**2 +1) #Derivada del perimetro mojado c/r a yn
-	fyc = (A**3)/Tc - Q**2/g
-	fycp = 3.*(A**2)-((A**3)/Tc**2)*2.*ss
-	yc2 = yc - fyc/fycp
+def AlturaCritica(yc):
+	tol = 10.
+	while tol > 1./10**6.:
+		Tc = 8+2.*yc*ss
+		A = b*yc+ss*yc**2 #Area
+		Pm = b + 2.*yc*sp.sqrt(ss**2 +1) #Perimetro mojado
+		fyc = (A**3)/Tc - Q**2/g
+		fycp = 3.*(A**2)-((A**3)/Tc**2)*2.*ss
+		yc2 = yc - fyc/fycp
 
-	tol = abs(yc2-yc)
-	yc = yc2
-	if tol < 1./10**6:
-		print yc
+		tol = abs(yc2-yc)
+		yc = yc2
+		if tol < 1./10**6:
+			return yc
+
+
+print AlturaCritica(1.)
