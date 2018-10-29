@@ -16,17 +16,17 @@ Pm = 2*yc+b #Perimetro mojado
 Q = Co/n*A*sp.sqrt(So)*(A/Pm)**(2./3) #Caudal
 g = 9.81 #Gravedad
 
-tol = 10.
+def AlturaCritica(yc):
+	tol = 10.
+	while tol > 1./10**6.:
+		Tc = 8+2.*yc*ss
+		A = b*yc  #Area
+		Pm = 2*yc+b #Perimetro mojado
+		fyc = (A**3)/Tc - Q**2/g
+		fycp = 3.*(A**2)-((A**3)/Tc**2)*2.*ss
+		yc2 = yc - fyc/fycp
 
-while tol > 1./10**6.:
-	Tc = 8+2.*yc*ss
-	A = b*yc  #Area
-	Pm = 2*yc+b #Perimetro mojado
-	fyc = (A**3)/Tc - Q**2/g
-	fycp = 3.*(A**2)-((A**3)/Tc**2)*2.*ss
-	yc2 = yc - fyc/fycp
-
-	tol = abs(yc2-yc)
-	yc = yc2
-	if tol < 1./10**6:
-		print yc
+		tol = abs(yc2-yc)
+		yc = yc2
+		if tol < 1./10**6:
+			return yc
