@@ -1,0 +1,32 @@
+import scipy as sp
+import matplotlib.pyplot as plt
+
+
+#Datos Fisicos
+ycini = 1. #Altura inicial dada por uno para comenzar a iterar
+
+b = 10. #Ancho de fondo del canal
+ss = 1./2 #Relacion entre H/V
+yc = ycini #Altura normal del agua 
+So = 0.001 #Pendiente de fondo
+n = 0.013
+Co = 1. #Depende del materia ###CAMBIAR
+A = b*yc #Area
+Pm = 2*yc+b #Perimetro mojado
+Q = Co/n*A*sp.sqrt(So)*(A/Pm)**(2./3) #Caudal
+g = 9.81 #Gravedad
+
+tol = 10.
+
+while tol > 1./10**6.:
+	Tc = 8+2.*yc*ss
+	A = b*yc  #Area
+	Pm = 2*yc+b #Perimetro mojado
+	fyc = (A**3)/Tc - Q**2/g
+	fycp = 3.*(A**2)-((A**3)/Tc**2)*2.*ss
+	yc2 = yc - fyc/fycp
+
+	tol = abs(yc2-yc)
+	yc = yc2
+	if tol < 1./10**6:
+		print yc
