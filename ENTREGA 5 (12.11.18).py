@@ -7,20 +7,25 @@ Created on Sun Nov 11 22:26:49 2018
 
 import scipy as sp
 
-#Datos Fisicos
-yini = 1. #Altura inicial dada por uno para comenzar a iterar
+def AlturaNormal(B,ss,yini,C0,S0,n):
+    yn = yini
+    q = 30 #m**3/s
+    tol = 10**(-6)+1
+    while tol>(10**(-6)):
+        A = B*yn + ss*(yn**2)
+        P = B + 2*yn*sp.sqrt(ss**2+1)
+        dAdyn = B + 2*ss*yn
+        dPdyn = 2*sp.sqrt(ss**2+1)
+        Q = (C0*(A**(5./3.)*(P**(-2./3.))*sp.sqrt(S0))/n)
 
-b = 10. #Ancho de fondo del canal
-ss = 1./2 #Relacion entre H/V
-yn = yini #Altura normal del agua 
-So = 0.001 #Pendiente de fondo
-n = 0.013
-Co = 1. #Depende del materia ###CAMBIAR
-A = b*yn+ss*yn**2 #Area
-Pm = b + 2*yn*sp.sqrt(ss**2 + 1)
-Q = Co/n*A*sp.sqrt(So)*(A/Pm)**(2./3) #Caudal
+        fyn = (A**(5./3.))*(P**(-2./3.))-(n*q)/(C0*sp.sqrt(S0))
+        dfyn = (5./3.)*(A**(2./3.))*(P**(-2./3.))*dAdyn - (2./3.)*(A**(5./3.))*(P**(-5./3.))*dPdyn
+        yn2 = yn - (fyn/dfyn)
 
-tol = 10.
+        tol = abs(yn2-yn)
+
+        yn = yn2
+    return yn
 
 
 def geom(y, b, ss):
@@ -71,47 +76,53 @@ def NR_FGV(yini, b, Q, n, So, ss, Co, dx, y1, z1):
     return valores
         
 
-
-
 def FGV(Q, b, So, ss, Co, x1, y1, z1, dx):
-    y_ini = yini
-    x1 = x1
-    y1 = y1
-    z1 = z1
-    dx = dx
+    y_ini = 1.
+    x = [x1]
+    y = [y1]
+    z = [z1]
     
     if Co == 1:
         g = 9.81
     else:
         g = 32.2
         
-    i = 0 #valor de entrada
-    while tol > 1./10**6.:
-	A = b*yn+ss*yn**2 #Area
-	Ap = b+2.*ss*yn #Derivada del area
-	Pm = b + 2.*yn*sp.sqrt(ss**2 +1) #Perimetro mojado
-	Pmp = 2.*sp.sqrt(ss**2 +1) #Derivada del perimetro mojado c/r a yn
-
-	fyn = A**(5./3)*Pm**(-2./3) - (n*Q)/(Co*sp.sqrt(So))
-	fynp = 5./3 * Pm**(-2./3) * A**(2./3) * Ap - 2./3 *A**(5./3) * Pm**(-5./3) *Pmp
-	yn2 = yn - fyn/fynp
-
-	tol = abs(yn2-yn)
-	yn = yn2
-	if tol < 1./10**6:
-		print yn
-    yn = yn
+    yn = AlturaNormal(b,ss,yini,C0,S0,n)
     
     diff = 0.001
-    
+    dist = 0
+    i = -1 #valor de entrada
     while y[i+1] > (yn - diff):
         i = i + 1
         dist = dist + dx
+        x.append(x[i]+dx)
         hola = NR_FGV(y_ini, b, Q, n, So, ss, Co, dx, y[i], z[i])
+        y.append(hola[0])
+        z.append(hola[1])
     
     elsa = hola[0] + hola[1]     #elevacion superficie de agua = y + z
     
     valores = [x, y, z, elsa, dist]
     
     return valores
-    
+
+
+# Datos Fisicos:
+yini = 1.                                       # Altura inicial dada por uno para comenzar a iterar
+B    = 10.                                      # Ancho de fondo del canal
+ss   = 2./1                                     # Relacion entre H/V
+yn   = yini                                     # Altura normal del agua 
+So   = 0.001                                    # Pendiente de fondo
+n    = 0.013                                    # n Manning
+Co   = 1.                                       # Sistema internacional
+A    = b*yn+ss*yn**2                            # Area
+Pm   = b + 2*yn*sp.sqrt(ss**2 + 1)
+Q    = Co/n*A*sp.sqrt(So)*(A/Pm)**(2./3)       # Caudal
+#Q    = 30.
+tol  = 10.                                      # Toleracia
+[x1, y1, z1] = [0., 3., 0.]                     # Punto inicial conocido
+dx = 5.                                         # delta x
+
+
+# Desarrollo:
+[x, y, z, elev_sa, dist] = FGV(Q, B, So, ss, Co, x1, y1, z1, dx)
